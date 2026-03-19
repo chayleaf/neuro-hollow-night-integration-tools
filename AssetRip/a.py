@@ -134,6 +134,8 @@ def img(x):
             data = f.read(sz)
     if x.m_TextureFormat == 12:
         data = undxt5(x.m_Width, x.m_Height, data)
+    else:
+        print(x.m_TextureFormat)
     image = Image.frombytes(
         "RGBA",
         (x.m_Width, x.m_Height),
@@ -226,9 +228,10 @@ for n in [
 #     {"m_FileID": 0, "m_PathID": 16417},
 #     {"m_FileID": 0, "m_PathID": 16296},
 #     {"m_FileID": 0, "m_PathID": 15598},
+     {"m_FileID": 0, "m_PathID": 2181},
 ]:
     try:
-        fullc = resource(n).m_Sprite
+        fullc = resource(n)#.m_Sprite
         if fullc.m_SpriteAtlas is None:
             tex = img(fullc.m_RD.texture)
         else:
@@ -263,7 +266,7 @@ for n in [
         print('err')
         continue
     tex.save("imgs/" + fullc.m_Name + ".png")
-#sys.exit()
+sys.exit()
 
 
 def dumpAnim(n):
@@ -272,11 +275,17 @@ def dumpAnim(n):
     assert len(animObj.m_Component) == 2
     q = Path(animObj.m_Name)
     for clip in animObj.m_Component[-1].component.clips:
-        # print(clip)
+        print(clip.name)
+        if clip.name != 'Fly 4':
+            #continue
+            pass # sys.exit()
         for i, fr in enumerate(clip.frames):
             c = fr.spriteCollection
             s = fr.spriteId
             sd = c.spriteDefinitions[s]
+            bd0, _bd1 = sd.boundsData
+            _bd0, bd1 = sd.untrimmedBoundsData
+            print(' ', i, bd0.x * 64, bd0.y * 64, _bd1.x * 64, _bd1.y * 64, bd1.x * 64, bd1.y * 64)
             assert str(sd.indices) == "[0, 3, 1, 2, 3, 0]"
             # print(sd)
             # print(sd['uvs'])
@@ -309,7 +318,13 @@ def dumpAnim(n):
                 assert t1.height == tex.width
                 assert t1.width == tex.height
                 tex = t1
-            tex.save(od)
+            #tex1 = Image.new("RGBA", (round(bd1.x * 64), round(bd1.y * 64)))
+            #tex1.alpha_composite(
+            #    tex,
+            #    (round((bd1.x - _bd1.x) * 32 + bd0.x * 64), round((bd1.y - _bd1.y) * 32 - bd0.y * 64))
+            #)
+            tex1 = tex
+            tex1.save(od)
 
 
 for n in []:
@@ -325,7 +340,9 @@ for n in []:
 #sys.exit()
 # for n in [5474]:  # [4040]: [7741]:
 #    dumpAnim(n)
-# sys.exit()
+for n in [7645]:
+    dumpAnim(n)
+sys.exit()
 
 Pos = namedtuple("Pos", "x y z")
 
